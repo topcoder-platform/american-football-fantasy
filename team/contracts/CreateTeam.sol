@@ -7,7 +7,6 @@ contract CreateTeam {
 
     constructor(address _platformAddress) public {
         platformAddress = _platformAddress;
-        MAX_VALUE = 50;
     }
 
     /**
@@ -37,10 +36,24 @@ contract CreateTeam {
 
 
 contract PlatformContract {
-    function getCurrentPlayerPosition() public returns (string);
-    function getCurrentPlayerCode() public returns (string);
-    function getCurrentBidValue() public returns (uint);
-    function getCurrentBalance() public returns (uint);
-    function getPlayerCount() public returns (uint);
-    function getMyPlayers() public returns (uint[]);
+    // Returns the Position of the player under auction
+    function getCurrentPlayerPosition() public returns (string currentPosition);
+    
+    // Returns the PlayerCode of the player under auction
+    function getCurrentPlayerCode() public returns (string currentPlayerCode);
+    
+    // Returns the Current Bid Value of the player under auction
+    function getCurrentBidValue() public returns (uint currentBidValue);
+    
+    // Returns the Remaining Balance of the team
+    function getCurrentBalance() public returns (uint currentBalance);
+    
+    // Returns total number of won players
+    function getPlayerCount() public returns (uint playerCount);
+    
+    // Returns array of PlayerIds of won players
+    function getMyPlayers() public returns (uint[] playerList);
+    
+    // Returns the details of Player
+    function getPlayerDetails(uint _playerId) public returns (string playerName, string playerPosition, string playerCode, uint currentValue, bool sold, address ownerAddress);
 }
