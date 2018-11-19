@@ -14,6 +14,12 @@ contract PlatformContract {
     struct Member {
         uint points;
         uint[] players;
+        uint qb;
+        uint rb;
+        uint wr;
+        uint te;
+        uint d;
+        uint k;
     }
     mapping (address => Member) members;
     address[] public memberArray;
@@ -42,7 +48,13 @@ contract PlatformContract {
     uint[] unsoldPlayers;
     address[] remainingTeams;
 
-    uint TEAM_PLAYER_COUNT = 15;
+    uint TEAM_PLAYER_COUNT = 12;
+    uint QB_COUNT = 2;
+    uint RB_COUNT = 3;
+    uint WR_COUNT = 3;
+    uint TE_COUNT = 2;
+    uint D_COUNT = 1;
+    uint K_COUNT = 1;
 
     function createTeam(address memberAddress) public returns (bool, uint) {
         Member storage member;
@@ -53,6 +65,12 @@ contract PlatformContract {
                 else {
                     member = members[memberAddress];
                     member.points = 200;
+                    member.qb = 0;
+                    member.rb = 0;
+                    member.wr = 0;
+                    member.te = 0;
+                    member.d = 0;
+                    member.k = 0;
                     memberArray.push(memberAddress);
                     return (true, i);
                 }      
@@ -60,6 +78,12 @@ contract PlatformContract {
         } else {
             member = members[memberAddress];
             member.points = 200;
+            member.qb = 0;
+            member.rb = 0;
+            member.wr = 0;
+            member.te = 0;
+            member.d = 0;
+            member.k = 0;
             memberArray.push(memberAddress);
             return (true, 0);    
         }
@@ -94,19 +118,24 @@ contract PlatformContract {
         bidderCount = 0;
         for (uint i = 0; i < memberArray.length; i++) {
             uint currentHoldingPlayers = members[memberArray[i]].players.length;
-            if(currentHoldingPlayers < TEAM_PLAYER_COUNT) {
-                c = CreateTeam(memberArray[i]);
-                uint bidValue = c.makeBid();
+            if(currentHoldingPlayers < TEAM_PLAYER_COUNT){
 
-                uint max_bid_value = members[memberArray[i]].points - (TEAM_PLAYER_COUNT - currentHoldingPlayers);
+                bool playerEligible = checkForPlayerPosition(pid, memberArray[i]);
+                
+                if(playerEligible) {
+                    c = CreateTeam(memberArray[i]);
+                    uint bidValue = c.makeBid();
 
-                if (bidValue != 0 && bidValue <= 200 && bidValue <= max_bid_value && bidValue > bidingPlayers[pid].currentBidValue) {
-                    bidingPlayers[pid].currentBidValue = bidValue;
-                    bidingPlayers[pid].bidders.push(memberArray[i]);
-                    bidingPlayers[pid].bidingValue[bidCount] = BidingValue({points: bidValue, member: memberArray[i]});
+                    uint max_bid_value = members[memberArray[i]].points - (TEAM_PLAYER_COUNT - currentHoldingPlayers);
 
-                    bidderCount++;
-                    bidCount++;
+                    if (bidValue != 0 && bidValue <= 200 && bidValue <= max_bid_value && bidValue > bidingPlayers[pid].currentBidValue) {
+                        bidingPlayers[pid].currentBidValue = bidValue;
+                        bidingPlayers[pid].bidders.push(memberArray[i]);
+                        bidingPlayers[pid].bidingValue[bidCount] = BidingValue({points: bidValue, member: memberArray[i]});
+
+                        bidderCount++;
+                        bidCount++;
+                    }
                 }
             }  
         }
@@ -122,7 +151,8 @@ contract PlatformContract {
             members[winner].points = members[winner].points - finalPoints;
             members[winner].players.push(pid);
 
-            players[pid].sold = true;    
+            players[pid].sold = true;  
+            updatePlayerPositionCount(players[pid].position, winner);  
         } else if (bidderCount > 1) {
             while(bidderCount == 1) {
                 bidNextRound(pid, max_bid_value);
@@ -136,23 +166,76 @@ contract PlatformContract {
             members[winner].players.push(pid);
 
             players[pid].sold = true;
+            updatePlayerPositionCount(players[pid].position, winner);  
         }
     }
 
     function bidNextRound(uint pid, uint max_bid_value) private {
         for (uint i = 0; i < bidingPlayers[pid].bidders.length; i++) {
-            CreateTeam c = CreateTeam(bidingPlayers[pid].bidders[i]);
-            uint bidValue = c.makeBid();
 
-            if (bidValue > 0 && bidValue <= 200 && bidValue <= max_bid_value && bidValue > bidingPlayers[pid].currentBidValue) {
-                bidingPlayers[pid].currentBidValue = bidValue;
-                bidingPlayers[pid].bidingValue[bidCount++] = BidingValue({points: bidValue, member: bidingPlayers[pid].bidders[i]});
+            bool playerEligible = checkForPlayerPosition(pid, bidingPlayers[pid].bidders[i]);
+            if(playerEligible) {
+                CreateTeam c = CreateTeam(bidingPlayers[pid].bidders[i]);
+                uint bidValue = c.makeBid();
+
+                if (bidValue > 0 && bidValue <= 200 && bidValue <= max_bid_value && bidValue > bidingPlayers[pid].currentBidValue) {
+                    bidingPlayers[pid].currentBidValue = bidValue;
+                    bidingPlayers[pid].bidingValue[bidCount++] = BidingValue({points: bidValue, member: bidingPlayers[pid].bidders[i]});
+                } else {
+                    if(bidderCount > 1) {
+                        bidderCount--;
+                        delete bidingPlayers[pid].bidders[i];
+                    }   
+                }
             } else {
                 if(bidderCount > 1) {
                     bidderCount--;
                     delete bidingPlayers[pid].bidders[i];
                 }   
-            }
+            }            
+        }
+    }
+
+    function checkForPlayerPosition(uint pid, address memberAddress) public returns (bool) {
+        string position = players[pid].position;
+        if(keccak256(position) == keccak256("QB") && members[memberAddress].qb < QB_COUNT) {
+            return true;
+        } else if(keccak256(position) == keccak256("RB") && members[memberAddress].rb < RB_COUNT) {
+            return true;
+        } else if(keccak256(position) == keccak256("WR") && members[memberAddress].wr < WR_COUNT) {
+            return true;
+        } else if(keccak256(position) == keccak256("TE") && members[memberAddress].te < TE_COUNT) {
+            return true;
+        } else if(keccak256(position) == keccak256("K") && members[memberAddress].k < K_COUNT) {
+            return true;
+        } else if(keccak256(position) == keccak256("DB") && members[memberAddress].d < D_COUNT) {
+            return true;
+        } else if(keccak256(position) == keccak256("DE") && members[memberAddress].d < D_COUNT) {
+            return true;
+        } else if(keccak256(position) == keccak256("DT") && members[memberAddress].d < D_COUNT) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function updatePlayerPositionCount(string position, address memberAddress) public {
+        if(keccak256(position) == keccak256("QB")) {
+            members[memberAddress].qb++;
+        } else if(keccak256(position) == keccak256("RB")) {
+            members[memberAddress].rb++;
+        } else if(keccak256(position) == keccak256("WR")) {
+            members[memberAddress].wr++;
+        } else if(keccak256(position) == keccak256("TE")) {
+            members[memberAddress].te++;
+        } else if(keccak256(position) == keccak256("K")) {
+            members[memberAddress].k++;
+        } else if(keccak256(position) == keccak256("DB")) {
+            members[memberAddress].d++;
+        } else if(keccak256(position) == keccak256("DE")) {
+            members[memberAddress].d++;
+        } else if(keccak256(position) == keccak256("DT")) {
+            members[memberAddress].d++;
         }
     }
 
@@ -208,6 +291,11 @@ contract PlatformContract {
     function getTeamDetails(address _address) public returns (uint, uint[]) {
         return (members[_address].points, members[_address].players);
     }
+
+    function getTeamPlayerTypeCount(address _address) public returns (uint, uint, uint, uint, uint, uint) {
+        return (members[_address].qb, members[_address].rb, members[_address].wr, members[_address].te, members[_address].d, members[_address].k);
+    }
+
 
     function getCurrentBalance() public returns (uint) {
         return members[msg.sender].points;    

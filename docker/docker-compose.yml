@@ -1,0 +1,8 @@
+version: '3'
+services:
+  american-football-fantasy:
+    image: american-football-fantasy:latest
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    network_mode: "host"
