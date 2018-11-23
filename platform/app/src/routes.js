@@ -41,24 +41,15 @@ module.exports = {
       method: 'getPlayerDetails'
     }
   },
-  
-  '/bid': {
-    post: {
-      controller: 'AuctionController',
-      method: 'makeBid'
-    }
-  },
 
   '/auction': {
     post: {
       controller: 'AuctionController',
-      method: 'completeAuction'
+      method: 'startAuction'
     },
     get: {
       controller: 'AuctionController',
       method: 'getResults'
     }
-  },
-  
-  
+  }
 }

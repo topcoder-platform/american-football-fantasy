@@ -21,12 +21,9 @@ async function getPlayerDetails (req, res) {
   res.json(await AuctionService.getPlayerDetails(req.params.playerId))
 }
 
-async function makeBid (req, res) {
-  res.json(await AuctionService.makeBid())
-}
-
-async function completeAuction (req, res) {
-  res.json(await AuctionService.completeAuction())
+async function startAuction (req, res) {
+  AuctionService.startAuction()
+  res.json({'message': 'Auction has been started'})
 }
 
 async function getResults (req, res) {
@@ -39,7 +36,6 @@ module.exports = {
   getMember,
   createPlayers,
   getPlayerDetails,
-  makeBid,
-  completeAuction,
+  startAuction,
   getResults
 }

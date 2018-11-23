@@ -130,62 +130,6 @@ const getPlayerDetails = async (playerId) => {
   })
 }
 
-const bidNextRound = async (playerId, bidders, contractInstance) => {
-  for (let j = 0; j < bidders.length; j++) {
-    let res = await contractInstance.bid.call(playerId, bidders[j])
-
-    if (parseInt(res.toString(), 10) > 0) {
-      await contractInstance.bid(playerId, bidders[j], { from: config.AUCTIONEER_ADDRESS, gas: config.DEFAULT_GAS })
-    } else {
-      let index = bidders.indexOf(bidders[j])
-      bidders.splice(index, 1)
-    }
-  }
-
-  return bidders
-}
-
-const bidFirstRound = async (playerId, contractInstance) => {
-  let bidders = await contractInstance.getMembers.call()
-
-  for (let i = 0; i < bidders.length; i++) {
-    await contractInstance.bid(playerId, bidders[i], { from: config.AUCTIONEER_ADDRESS, gas: config.DEFAULT_GAS })
-  }
-
-  let playerDetails = await contractInstance.getPlayerDetails.call(playerId)
-  let totalBidders = playerDetails[6]
-
-  if (totalBidders.length > 1) {
-    do {
-      totalBidders = await bidNextRound(playerId, totalBidders, contractInstance)
-    } while (totalBidders.length > 1)
-  }
-
-  playerDetails = await contractInstance.getPlayerDetails.call(playerId)
-
-  if (playerDetails[7] == 0) {
-    logger.info('No Bidders for Player ID: ' + playerId);
-  } else {
-    let bidDetail = await contractInstance.getBidderDetails.call(playerId, playerDetails[7] - 1)
-
-    await contractInstance.playerSold(playerId, 
-      bidDetail[0], 
-      bidDetail[1], 
-      { from: config.AUCTIONEER_ADDRESS, gas: config.DEFAULT_GAS }
-    );
-
-    logger.info("Player ID: " + playerId + " Sold to " + bidDetail[0] + " for " + bidDetail[1].toString() + " points");
-  }
-}
-
-const makeBid = async () => {
-  const contractInstance = await helper.getPlatFormContract();
-  
-  for (let i = 0; i < Players.length; i++) {
-    await bidFirstRound(Players[i].id,contractInstance);
-  }
-}
-
 const assignRemainingPlayers = async (position, expectedCount, actualCount, memberAddress) => {
   const contractInstance = await helper.getPlatFormContract();
   
@@ -256,6 +200,66 @@ const completeAuction = async () => {
   return { 'message': 'Auction Completed' }
 }
 
+const bidNextRound = async (playerId, bidders, contractInstance) => {
+  for (let j = 0; j < bidders.length; j++) {
+    let res = await contractInstance.bid.call(playerId, bidders[j])
+
+    if (parseInt(res.toString(), 10) > 0) {
+      await contractInstance.bid(playerId, bidders[j], { from: config.AUCTIONEER_ADDRESS, gas: config.DEFAULT_GAS })
+    } else {
+      let index = bidders.indexOf(bidders[j])
+      bidders.splice(index, 1)
+    }
+  }
+
+  return bidders
+}
+
+const bidFirstRound = async (playerId, contractInstance) => {
+  let bidders = await contractInstance.getMembers.call()
+
+  for (let i = 0; i < bidders.length; i++) {
+    await contractInstance.bid(playerId, bidders[i], { from: config.AUCTIONEER_ADDRESS, gas: config.DEFAULT_GAS })
+  }
+
+  let playerDetails = await contractInstance.getPlayerDetails.call(playerId)
+  let totalBidders = playerDetails[6]
+
+  if (totalBidders.length > 1) {
+    do {
+      totalBidders = await bidNextRound(playerId, totalBidders, contractInstance)
+    } while (totalBidders.length > 1)
+  }
+
+  playerDetails = await contractInstance.getPlayerDetails.call(playerId)
+
+  if (playerDetails[7] == 0) {
+    logger.info('No Bidders for Player ID: ' + playerId);
+  } else {
+    let bidDetail = await contractInstance.getBidderDetails.call(playerId, playerDetails[7] - 1)
+
+    await contractInstance.playerSold(playerId, 
+      bidDetail[0], 
+      bidDetail[1], 
+      { from: config.AUCTIONEER_ADDRESS, gas: config.DEFAULT_GAS }
+    );
+
+    logger.info("Player ID: " + playerId + " Sold to " + bidDetail[0] + " for " + bidDetail[1].toString() + " points");
+  }
+}
+
+const startAuction = async () => {
+  const contractInstance = await helper.getPlatFormContract();
+  
+  for (let i = 0; i < Players.length; i++) {
+    await bidFirstRound(Players[i].id,contractInstance);
+  }
+
+  await completeAuction();
+
+  logger.info('Auction has been completed and teams are ready to compete !!!')
+}
+
 const getResults = async () => {
   const contractInstance = await helper.getPlatFormContract();
   const members = await contractInstance.getMembers.call();
@@ -275,7 +279,6 @@ module.exports = {
   getMember,
   createPlayers,
   getPlayerDetails,
-  makeBid,
-  completeAuction,
+  startAuction,
   getResults
 }

@@ -1,0 +1,190 @@
+{
+	"info": {
+		"_postman_id": "46df09e0-1487-4f93-9e29-a62dda8941be",
+		"name": "american-football-fantasy",
+		"description": "Ameriacan Football Fantasy - Smart Auctioning Platform",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Initiate Contract",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}:{{port}}/platformContract",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"platformContract"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Member",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}:{{port}}/member/:memberAddress/:memberName",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"member",
+						":memberAddress",
+						":memberName"
+					],
+					"variable": [
+						{
+							"key": "memberAddress",
+							"value": "0xa5f5c57422135e1eb9bf3060d3c6204055dc97d3"
+						},
+						{
+							"key": "memberName",
+							"value": "Team_424"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Member Details",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}:{{port}}/member/:memberAddress",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"member",
+						":memberAddress"
+					],
+					"variable": [
+						{
+							"key": "memberAddress",
+							"value": "0x2011be414e0461ce16a5dd7ede6f6a19bbae872b"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Players",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}:{{port}}/players",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"players"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Player Details",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}:{{port}}/player/:playerId",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"player",
+						":playerId"
+					],
+					"variable": [
+						{
+							"key": "playerId",
+							"value": "344"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Start Auction",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}:{{port}}/auction",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"auction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Auction Results",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}:{{port}}/auction",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"auction"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
